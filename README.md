@@ -4,7 +4,7 @@
 wxc-bench/
 │
 ├── setup.py
-├── setup.cfg
+├── MANIFEST.in
 ├── pyproject.toml
 ├── README.md
 ├── LICENSE
@@ -17,67 +17,35 @@ wxc-bench/
 │   │
 │   ├── aviation_turbulence/
 │   │   ├── __init__.py
-│   │   ├── data_acquisition.py         # get_pirep_data, download_merra2_data
-│   │   ├── data_processing.py          # filter_pireps, categorize_by_altitude
-│   │   ├── training_data.py            # create_training_data, generate_labels
-│   │   ├── visualization.py            # plot_turbulence_patterns, visualize_risk
-│   │   ├── grid_operations.py          # create_grids, spatial_matching
-│   │   ├── utils.py                    # Helper functions
-│   │   └── config.py                   # Configuration settings
+│   │   ├── PIREP_downloads.py
+│   │   ├── convert2risk_map.py
+│   │   ├── grid_pireps.py
+│   │   ├── make_training_data.py
+│   │   ├── modg_preprocess.py
+│   │   ├── turb_eda_preprocessing.py
+│   │   └── config.py
 │   │
 │   ├── forecast_report_generation/
 │   │   ├── __init__.py
-│   │   ├── data_loader.py
-│   │   ├── text_generation.py
-│   │   ├── evaluation.py
+│   │   ├── create_metadata.py
+│   │   ├── download_hrrr.py
+│   │   └── weather_report_data_scraping.py
+│   │
+│   ├── hurricane/
+│   │   ├── __init__.py
+│   │   ├── hurricane_intensity.py
+│   │   └── hurricane_track.py
+│   │
+│   ├── long_term_precipitation_forecast/
+│   │   ├── __init__.py
 │   │   └── utils.py
 │   │
-│   ├── gravity_wave/
+│   ├── nonlocal_parameterization/
 │   │   ├── __init__.py
-│   │   ├── data_loader.py
-│   │   ├── flux_calculation.py
-│   │   ├── parameterization.py
-│   │   └── utils.py
 │   │
-│   ├── hurricane_tracking/
-│   │   ├── __init__.py
-│   │   ├── data_loader.py
-│   │   ├── track_prediction.py
-│   │   ├── intensity_prediction.py
-│   │   └── visualization.py
-│   │
-│   ├── weather_analogs/
-│   │   ├── __init__.py
-│   │   ├── data_loader.py
-│   │   ├── similarity_search.py
-│   │   └── utils.py
-│   │
-│   ├── precipitation_forecast/
-│   │   ├── __init__.py
-│   │   ├── data_loader.py
-│   │   ├── forecast.py
-│   │   └── evaluation.py
-│   │
-│   ├── common/
-│   │   ├── __init__.py
-│   │   ├── data_utils.py              # Common data utilities
-│   │   ├── io_utils.py                # File I/O operations
-│   │   ├── constants.py               # Package-wide constants
-│   │   └── exceptions.py              # Custom exceptions
-│   │
-│   └── cli/
+│   └── weather_analog/
 │       ├── __init__.py
-│       └── main.py                    # Command-line interface
-│
-├── tests/
-│   ├── __init__.py
-│   ├── test_aviation_turbulence/
-│   │   ├── __init__.py
-│   │   ├── test_data_acquisition.py
-│   │   ├── test_data_processing.py
-│   │   └── test_training_data.py
-│   ├── test_forecast_report_generation/
-│   └── test_common/
+│       └── preprocess_weather_analog.py
 │
 ├── docs/
 │   ├── index.md
