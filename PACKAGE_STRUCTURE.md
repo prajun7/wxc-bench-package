@@ -1,7 +1,7 @@
 # WxC-Bench Python Package Structure
 
 ```text
-wxc-bench/
+wxc-bench-package/
 │
 ├── setup.py
 ├── MANIFEST.in
@@ -38,28 +38,25 @@ wxc-bench/
 │   │
 │   ├── long_term_precipitation_forecast/
 │   │   ├── __init__.py
-│   │   └── utils.py
+│   │   ├── config.py
+│   │   ├── evaluation.py
+│   │   ├── data_loading.py
+│   │   ├── preprocessing.py
+│   │   └── visualization.py
 │   │
 │   ├── nonlocal_parameterization/
 │   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── download_era5.py
+│   │   ├── compute_momentum_flux.py
+│   │   └── coarsegrain_fluxes.py
 │   │
 │   └── weather_analog/
 │       ├── __init__.py
+│       ├── config.py
 │       └── preprocess_weather_analog.py
 │
-├── docs/
-│   ├── index.md
-│   ├── installation.md
-│   ├── quickstart.md
-│   ├── api/
-│   │   ├── aviation_turbulence.md
-│   │   ├── forecast_report_generation.md
-│   │   └── ...
-│   └── examples/
-│       ├── aviation_turbulence_example.ipynb
-│       └── ...
-│
-└── examples/
+└── usage/
     ├── aviation_turbulence_workflow.py
     ├── forecast_generation_example.py
     └── complete_pipeline.py
