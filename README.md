@@ -6,6 +6,15 @@
 pip install wxcbench
 ```
 
+**Note:** If you encounter build errors related to `pyspharm` (a dependency of `windspharm`), ensure `numpy` is installed first:
+
+```bash
+pip install numpy>=1.20.0
+pip install wxcbench
+```
+
+This ensures `numpy` is available when building dependencies that require it at build time.
+
 ## Usage
 
 ### Aviation Turbulence Module
