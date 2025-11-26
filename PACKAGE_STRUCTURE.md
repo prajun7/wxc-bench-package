@@ -38,7 +38,11 @@ wxc-bench/
 │   │
 │   ├── long_term_precipitation_forecast/
 │   │   ├── __init__.py
-│   │   └── utils.py
+│   │   ├── config.py
+│   │   ├── evaluation.py
+│   │   ├── data_loading.py
+│   │   ├── preprocessing.py
+│   │   └── visualization.py
 │   │
 │   ├── nonlocal_parameterization/
 │   │   ├── __init__.py

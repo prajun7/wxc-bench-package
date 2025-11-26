@@ -17,6 +17,7 @@ from wxcbench import gravity_wave
 from wxcbench import hurricane
 from wxcbench import weather_analogs
 from wxcbench import precipitation_forecast
+from wxcbench import long_term_precipitation_forecast
 from wxcbench import common
 
 __all__ = [
@@ -26,5 +27,6 @@ __all__ = [
     "gravity_wave",
     "weather_analogs",
     "precipitation_forecast",
+    "long_term_precipitation_forecast",
     "common",
 ]
