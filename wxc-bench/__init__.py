@@ -14,7 +14,7 @@ from wxcbench.__version__ import __version__
 from wxcbench import aviation_turbulence
 from wxcbench import forecast_report_generation
 from wxcbench import gravity_wave
-from wxcbench import hurricane_tracking
+from wxcbench import hurricane
 from wxcbench import weather_analogs
 from wxcbench import precipitation_forecast
 from wxcbench import common

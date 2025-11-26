@@ -479,3 +479,145 @@ All default settings are built into the package and can be customized through fu
 - **Metadata Output:** Can be customized via `output_file` parameter in `create_metadata()` (default: `./metadata.csv`)
 
 ---
+
+### Hurricane Module
+
+The `hurricane` module provides functionality for analyzing and visualizing hurricane tracks and intensities from the HURDAT2 dataset maintained by the National Hurricane Center (NHC). Here's how to use each function:
+
+#### Import the Hurricane Module
+
+```python
+import wxcbench.hurricane as hurricane
+```
+
+#### 1. Plot Hurricane Intensity
+
+**Function:** `plot_intensity()`
+
+**What it does:** Creates time series plots of hurricane intensity metrics over time. The function:
+
+- Plots maximum sustained wind speed and minimum sea level pressure on dual y-axes
+- Displays intensity evolution throughout the storm's lifetime
+- Supports analysis of individual storms with customizable time ranges
+- Saves high-resolution visualizations
+
+**Parameters:**
+
+- `name` (str, optional): The name of the hurricane (default: `'michael'`)
+- `year` (int, optional): The year of the hurricane (default: `2018`)
+- `start` (int, optional): The index to start plotting the data (default: `1`)
+- `skip` (int, optional): The number of data points to skip when plotting (default: `10`)
+- `output_file` (str, optional): Path to save the figure. If None, generates filename automatically
+- `output_dir` (str, optional): Directory to save the figure (default: `./hurricane_figures`)
+- `figsize` (tuple, optional): Figure size as (width, height) (default: `(10, 6)`)
+- `dpi` (int, optional): Resolution for saved figure (default: `300`)
+
+**Example:**
+
+```python
+# Plot intensity for Hurricane Harvey (2017)
+hurricane.plot_intensity(name='harvey', year=2017, start=2)
+
+# Plot intensity for Hurricane Laura (2020)
+hurricane.plot_intensity(name='laura', year=2020, start=2)
+```
+
+**Output:**
+
+- Creates `hurricane_figures/` directory (or specified directory)
+- Saves PNG file: `Intensity_HARVEY_2017.jpeg`
+- Figure shows dual y-axes: wind speed (kt) and pressure (hPa) over time
+
+---
+
+#### 2. Plot Hurricane Track
+
+**Function:** `plot_track()`
+
+**What it does:** Plots hurricane tracks on a geographic map with color-coding based on storm intensity. The function:
+
+- Visualizes hurricane paths on a geographic domain
+- Color-codes track points based on wind speed intensity
+- Supports visualization of both single storms and entire hurricane seasons
+- Uses a color scale representing different hurricane categories (TD, TS, Cat 1-5)
+- Includes a color bar legend for intensity categories
+
+**Parameters:**
+
+- `year` (int, optional): Year to plot. If None and storm_name is provided, uses the storm's year. If both None, defaults to 2017
+- `storm_name` (str, optional): Name of specific storm to plot. If None, plots all storms for the given year
+- `basin` (str, optional): Hurricane basin to use (default: `'north_atlantic'`)
+- `domain_bb` (list, optional): Bounding box for the domain plot as `[lon_min, lon_max, lat_min, lat_max]` (default: `[-110, -20, 5, 55]`)
+- `output_file` (str, optional): Path to save the figure. If None, generates filename automatically
+- `output_dir` (str, optional): Directory to save the figure (default: `./hurricane_figures`)
+- `figsize` (tuple, optional): Figure size as (width, height) (default: `(10, 6)`)
+- `dpi` (int, optional): Resolution for saved figure (default: `300`)
+- `show` (bool, optional): Whether to display the plot (default: `False`)
+
+**Example:**
+
+```python
+# Plot all hurricanes from the 2017 Atlantic season
+hurricane.plot_track(year=2017)
+
+# Plot a specific hurricane track
+hurricane.plot_track(storm_name='harvey', year=2017)
+
+# Plot with custom domain
+hurricane.plot_track(
+    year=2020,
+    domain_bb=[-100, -60, 20, 40],
+    output_dir='./custom_output'
+)
+```
+
+**Output:**
+
+- Creates `hurricane_figures/` directory (or specified directory)
+- Saves PNG file: `Track_SEASON_2017.png` or `Track_HARVEY_2017.png`
+- Figure shows geographic map with hurricane tracks color-coded by intensity
+- Includes color bar legend showing intensity categories
+
+---
+
+### Complete Hurricane Analysis Workflow Example
+
+Here's a complete example that demonstrates the full pipeline:
+
+```python
+import wxcbench.hurricane as hurricane
+
+# Step 1: Plot intensity for multiple hurricanes
+print("Step 1: Plotting hurricane intensities...")
+hurricane.plot_intensity(name='alicia', year=1983, start=2)
+hurricane.plot_intensity(name='harvey', year=2017, start=2)
+hurricane.plot_intensity(name='laura', year=2020, start=2)
+hurricane.plot_intensity(name='ike', year=2008, start=2)
+hurricane.plot_intensity(name='rita', year=2005, start=2)
+
+# Step 2: Plot tracks for specific hurricanes
+print("Step 2: Plotting hurricane tracks...")
+hurricane.plot_track(storm_name='harvey', year=2017)
+hurricane.plot_track(storm_name='laura', year=2020)
+
+# Step 3: Plot entire season
+print("Step 3: Plotting 2017 Atlantic hurricane season...")
+hurricane.plot_track(year=2017)
+
+print("Analysis complete!")
+```
+
+---
+
+### Hurricane Module Configuration
+
+All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
+
+- **HURDAT2 Dataset URL:** NOAA's HURDAT2 database URL (built-in default)
+- **Basin:** Can be customized via `basin` parameter in `plot_track()` (default: `'north_atlantic'`)
+- **Domain Bounding Box:** Can be customized via `domain_bb` parameter in `plot_track()` (default: `[-110, -20, 5, 55]`)
+- **Intensity Categories:** Built-in bounds for TD, TS, Cat 1-5 classification
+- **Output Directories:** Can be customized via `output_dir` parameters in each function (default: `./hurricane_figures`)
+- **Figure Settings:** Can be customized via `figsize` and `dpi` parameters (defaults: `(10, 6)`, `300`)
+
+---
