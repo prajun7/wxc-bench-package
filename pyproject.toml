@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wxcbench"
-version = "0.1.1"
+version = "0.1.2"
 description = "A multi-modal dataset toolkit for weather and climate downstream tasks"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -52,6 +52,9 @@ dependencies = [
     "matplotlib>=3.3.0",
     "requests>=2.25.0",
     "beautifulsoup4>=4.9.0",
+    "setuptools>=61.0",
+    "scipy>=1.1.0",
+    "scikit-learn>=0.24.0",
     "tropycal>=0.5.0",
     "xesmf>=0.6.0",
     "cdsapi>=0.5.0",
