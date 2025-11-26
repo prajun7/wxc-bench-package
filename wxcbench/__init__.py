@@ -1,12 +1,4 @@
 """
-OpenGovCorpus - A library for creating datasets and RAG embeddings from government websites
-"""
-
-__version__ = "0.1.0"
-__author__ = "Prajun Trital"
-__license__ = "MIT"
-
-"""
 WxC-Bench: Multi-modal dataset toolkit for weather and climate downstream tasks
 """
 from wxcbench.__version__ import __version__

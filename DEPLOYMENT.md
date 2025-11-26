@@ -51,7 +51,7 @@ You should see `(wxc-bench-env)` in your terminal prompt when activated.
 Update version in:
 
 - `pyproject.toml`: `version = "0.1.0"`
-- `wxc-bench/__version__.py`: `__version__ = "0.1.0"`
+- `wxcbench/__version__.py`: `__version__ = "0.1.0"`
 
 ## Building the Package
 
@@ -137,7 +137,7 @@ pip install wxc-bench
 
 For each new release:
 
-1. Update version in `pyproject.toml` and `wxc-bench/__version__.py`
+1. Update version in `pyproject.toml` and `wxcbench/__version__.py`
 2. Build: `python -m build`
 3. Check: `twine check dist/*`
 4. Upload: `python -m twine upload dist/*`
