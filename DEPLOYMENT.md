@@ -15,7 +15,7 @@
 2. Go to Account Settings → API tokens (or visit https://test.pypi.org/manage/account/token/)
 3. Click "Add API token"
 4. Name it (e.g., `testpypi-uploader`)
-5. Set scope to your project name: `wxc-bench`
+5. Set scope to your project name: `wxcbench`
 6. Click "Add token" and **copy the token immediately** (starts with `pypi-`)
 
 #### For PyPI:
@@ -24,7 +24,7 @@
 2. Go to Account Settings → API tokens (or visit https://pypi.org/manage/account/token/)
 3. Click "Add API token"
 4. Name it (e.g., `pypi-uploader`)
-5. Set scope to your project name: `wxc-bench` (not "Entire account")
+5. Set scope to your project name: `wxcbench` (not "Entire account")
 6. Click "Add token" and **copy the token immediately** (starts with `pypi-`)
 
 ## Before Deployment
@@ -35,16 +35,16 @@ If you're using a virtual environment, activate it first:
 
 ```bash
 # From project root directory
-source wxc-bench-env/bin/activate
+source wxcbench-env/bin/activate
 ```
 
 Or with full path:
 
 ```bash
-source /path/to/wxc-bench-package/wxc-bench-env/bin/activate
+source /path/to/wxc-bench-package/wxcbench-env/bin/activate
 ```
 
-You should see `(wxc-bench-env)` in your terminal prompt when activated.
+You should see `(wxcbench-env)` in your terminal prompt when activated.
 
 ### Update Version
 
@@ -75,8 +75,8 @@ python -m build
 
 This creates:
 
-- `dist/wxc-bench-0.1.0.tar.gz` (source distribution)
-- `dist/wxc-bench-0.1.0-py3-none-any.whl` (wheel)
+- `dist/wxcbench-0.1.0.tar.gz` (source distribution)
+- `dist/wxcbench-0.1.0-py3-none-any.whl` (wheel)
 
 ### Step 4: Check the Build
 
@@ -100,7 +100,7 @@ When prompted:
 ### Step 2: Test Installation
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ wxc-bench
+pip install --index-url https://test.pypi.org/simple/ wxcbench
 ```
 
 ### Step 3: Verify
@@ -125,12 +125,12 @@ When prompted:
 
 ### Step 2: Verify on PyPI
 
-Visit: https://pypi.org/project/wxc-bench/
+Visit: https://pypi.org/project/wxcbench/
 
 ### Step 3: Install from PyPI
 
 ```bash
-pip install wxc-bench
+pip install wxcbench
 ```
 
 ## Updating the Package

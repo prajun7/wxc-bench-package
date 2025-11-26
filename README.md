@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install wxc-bench
+pip install wxcbench
 ```
 
 ## Usage

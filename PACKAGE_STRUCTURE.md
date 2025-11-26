@@ -1,7 +1,7 @@
 # WxC-Bench Python Package Structure
 
 ```text
-wxc-bench/
+wxc-bench-package/
 │
 ├── setup.py
 ├── MANIFEST.in
