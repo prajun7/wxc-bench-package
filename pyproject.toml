@@ -67,6 +67,7 @@ Repository = "https://github.com/NASA-IMPACT/WxC-Bench"
 [tool.setuptools]
 include-package-data = true
 zip-safe = false
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 exclude = [
