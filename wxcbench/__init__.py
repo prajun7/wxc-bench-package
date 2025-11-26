@@ -11,7 +11,26 @@ from wxcbench import forecast_report_generation
 from wxcbench import hurricane
 from wxcbench import weather_analog
 from wxcbench import long_term_precipitation_forecast
-from wxcbench import nonlocal_parameterization
+
+# Lazy import for optional dependency (nonlocal_parameterization requires windspharm)
+# Import only when explicitly accessed to avoid errors if windspharm is not installed
+_nonlocal_parameterization = None
+
+def __getattr__(name):
+    """Lazy import for nonlocal_parameterization module."""
+    if name == "nonlocal_parameterization":
+        global _nonlocal_parameterization
+        if _nonlocal_parameterization is None:
+            try:
+                from wxcbench import nonlocal_parameterization
+                _nonlocal_parameterization = nonlocal_parameterization
+            except ImportError as e:
+                raise ImportError(
+                    "The nonlocal_parameterization module requires windspharm. "
+                    "Install it with: pip install wxcbench[nonlocal_parameterization]"
+                ) from e
+        return _nonlocal_parameterization
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 __all__ = [
     "aviation_turbulence",
