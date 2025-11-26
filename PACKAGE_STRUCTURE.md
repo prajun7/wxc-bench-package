@@ -46,6 +46,10 @@ wxc-bench/
 │   │
 │   ├── nonlocal_parameterization/
 │   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── download_era5.py
+│   │   ├── compute_momentum_flux.py
+│   │   └── coarsegrain_fluxes.py
 │   │
 │   └── weather_analog/
 │       ├── __init__.py

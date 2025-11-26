@@ -18,7 +18,7 @@ from wxcbench import hurricane
 from wxcbench import weather_analogs
 from wxcbench import precipitation_forecast
 from wxcbench import long_term_precipitation_forecast
-from wxcbench import common
+from wxcbench import nonlocal_parameterization
 
 __all__ = [
     "aviation_turbulence",
@@ -28,5 +28,5 @@ __all__ = [
     "weather_analogs",
     "precipitation_forecast",
     "long_term_precipitation_forecast",
-    "common",
+    "nonlocal_parameterization",
 ]
