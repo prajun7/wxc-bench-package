@@ -1,7 +1,11 @@
 """
 WxC-Bench: Multi-modal dataset toolkit for weather and climate downstream tasks
 """
+
 from wxcbench.__version__ import __version__
+
+__author__ = "Prajun Trital"
+__license__ = "MIT"
 
 from wxcbench import aviation_turbulence
 from wxcbench import forecast_report_generation
