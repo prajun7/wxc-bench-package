@@ -6,6 +6,13 @@ global-exclude __pycache__
 global-exclude *.py[co]
 global-exclude .git*
 global-exclude *.egg-info
+global-exclude wxcbench-env
+global-exclude wxcbench-env/
+global-exclude venv
+global-exclude venv/
+global-exclude env/
+global-exclude .venv
+global-exclude .env
 global-exclude .pytest_cache
 global-exclude .DS_Store
 global-exclude usage
