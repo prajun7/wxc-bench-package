@@ -53,9 +53,13 @@ dependencies = [
     "requests>=2.25.0",
     "beautifulsoup4>=4.9.0",
     "tropycal>=0.5.0",
-    "windspharm>=1.7.0",
     "xesmf>=0.6.0",
     "cdsapi>=0.5.0",
+]
+
+[project.optional-dependencies]
+nonlocal_parameterization = [
+    "windspharm>=1.7.0",
 ]
 
 [project.urls]

@@ -2,24 +2,34 @@
 
 ## Installation
 
-**Important:** Due to a build dependency issue with `pyspharm` (required by `windspharm`), you need to use the `--no-build-isolation` flag:
+### Basic Installation
 
 ```bash
-pip install "numpy>=1.20.0"
-pip install --no-build-isolation wxcbench
-```
-
-**Why?** The `pyspharm` package requires `numpy` to be available during its build process. Pip's default build isolation creates a temporary environment that doesn't have access to already-installed packages like `numpy`. The `--no-build-isolation` flag allows the build process to use your current environment where `numpy` is installed.
-
-**Alternative method** (if the above doesn't work):
-
-```bash
-pip install "numpy>=1.20.0"
-pip install --no-build-isolation "pyspharm>=1.0.9"
 pip install wxcbench
 ```
 
-This installs `pyspharm` separately first, then installs the rest of the package.
+### Optional Dependencies
+
+If you plan to use the `nonlocal_parameterization` module, you'll need to install `windspharm`:
+
+```bash
+pip install wxcbench[nonlocal_parameterization]
+```
+
+**Note:** `windspharm` has a build dependency issue with `pyspharm`. If you encounter build errors, use:
+
+```bash
+pip install "numpy>=1.20.0" setuptools wheel
+pip install --no-build-isolation wxcbench[nonlocal_parameterization]
+```
+
+Or install `windspharm` separately first:
+
+```bash
+pip install "numpy>=1.20.0" setuptools wheel
+pip install --no-build-isolation "windspharm>=1.7.0"
+pip install wxcbench[nonlocal_parameterization]
+```
 
 ## Usage
 
@@ -1115,6 +1125,12 @@ All default settings are built into the package and can be customized through fu
 ---
 
 ### Nonlocal Parameterization Module
+
+**Note:** This module requires the optional `windspharm` dependency. Install it with:
+
+```bash
+pip install wxcbench[nonlocal_parameterization]
+```
 
 The `nonlocal_parameterization` module provides functionality for processing ERA5 reanalysis data to compute and analyze momentum fluxes for nonlocal parameterization schemes in atmospheric models. This module consists of a three-step pipeline: downloading ERA5 model level data, computing momentum fluxes using Helmholtz decomposition, and coarse-graining the results to a T42 grid.
 
