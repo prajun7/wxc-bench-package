@@ -1098,3 +1098,398 @@ All default settings are built into the package and can be customized through fu
 - **Figure Settings:** Can be customized via `figsize` and `dpi` parameters (defaults: `(12, 8)`, `300`)
 
 ---
+
+### Nonlocal Parameterization Module
+
+The `nonlocal_parameterization` module provides functionality for processing ERA5 reanalysis data to compute and analyze momentum fluxes for nonlocal parameterization schemes in atmospheric models. This module consists of a three-step pipeline: downloading ERA5 model level data, computing momentum fluxes using Helmholtz decomposition, and coarse-graining the results to a T42 grid.
+
+#### Import the Nonlocal Parameterization Module
+
+```python
+import wxcbench.nonlocal_parameterization as nonlocal
+```
+
+#### 1. Download ERA5 Model Level Data
+
+**Function:** `download_era5_modellevel_data()`
+
+**What it does:** Downloads ERA5 model level analysis fields from the CDS API. The function:
+
+- Downloads temperature (T), zonal wind (U), meridional wind (V), and vertical velocity (W) fields
+- Supports configurable date ranges (year, month, day range)
+- Downloads hourly data at 0.3° resolution across 137 model levels
+- Creates organized output files for each field and day
+
+**Parameters:**
+
+- `year` (int, required): The year for data download
+- `month` (int, required): The month (1-12) for data download
+- `start_day` (int, optional): The start day of the month (1-31). If None, uses 1 (default: None)
+- `end_day` (int, optional): The end day of the month (1-31). If None, uses last day of month (default: None)
+- `output_dir` (str, optional): Directory to save downloaded files (default: `./ERA5_data_ml`)
+- `fields` (list, optional): List of field names to download. Options: ['T', 'U', 'V', 'W']. If None, downloads all fields (default: None)
+
+**Example:**
+
+```python
+# Download ERA5 data for January 2020
+files = nonlocal.download_era5_modellevel_data(
+    year=2020,
+    month=1,
+    start_day=1,
+    end_day=31,
+    output_dir='./ERA5_data'
+)
+
+# Download specific fields only
+files = nonlocal.download_era5_modellevel_data(
+    year=2020,
+    month=1,
+    fields=['U', 'V', 'W'],
+    output_dir='./ERA5_data'
+)
+```
+
+**Output:**
+
+- Creates output directory (default: `./ERA5_data_ml`)
+- Downloads NetCDF files for each field and day:
+  - Temperature: `T{YYYYMMDD}_ml.nc`
+  - Zonal wind: `U{YYYYMMDD}_ml.nc`
+  - Meridional wind: `V{YYYYMMDD}_ml.nc`
+  - Vertical wind: `W{YYYYMMDD}_ml.nc`
+- Returns list of paths to downloaded files
+
+---
+
+#### 2. Compute Momentum Fluxes
+
+**Function:** `compute_momentum_flux_from_era5()`
+
+**What it does:** Calculates resolved momentum fluxes from ERA5 data using Helmholtz decomposition. The function:
+
+- Separates wind fields into rotational and divergent components using spherical harmonics
+- Applies T21 truncation for scale separation (filtering large-scale patterns)
+- Computes eddy momentum fluxes (uw, vw) for nonlocal parameterization
+- Processes hourly data across all 137 model levels
+
+**Parameters:**
+
+- `year` (int, required): The year to process
+- `month` (int, required): The month (1-12) to process
+- `start_day` (int, optional): The start day of the month (1-31). If None, uses 1 (default: None)
+- `end_day` (int, optional): The end day of the month (1-31). If None, uses last day of month (default: None)
+- `era5_data_dir` (str, optional): Directory containing ERA5 model level data (default: `./ERA5_data_ml`)
+- `output_dir` (str, optional): Directory to save computed momentum flux files (default: `./momentum_fluxes`)
+- `truncation` (int, optional): Truncation wavenumber for scale separation (default: T21)
+- `log_file` (str, optional): Path to log file. If None, prints to console (default: None)
+
+**Example:**
+
+```python
+# Compute momentum fluxes for January 2020
+flux_files = nonlocal.compute_momentum_flux_from_era5(
+    year=2020,
+    month=1,
+    era5_data_dir='./ERA5_data_ml',
+    output_dir='./momentum_fluxes'
+)
+
+# Use custom truncation
+flux_files = nonlocal.compute_momentum_flux_from_era5(
+    year=2020,
+    month=1,
+    truncation=42,  # T42 truncation
+    log_file='./flux_compute.log'
+)
+```
+
+**Output:**
+
+- Creates output directory (default: `./momentum_fluxes`)
+- Creates NetCDF files: `helmholtz_fluxes_hourly_era5_{day}{month_name}{year}.nc`
+- Each file contains:
+  - `uw`: Zonal flux of vertical momentum (Pa)
+  - `vw`: Meridional flux of vertical momentum (Pa)
+  - Dimensions: time (24 hours), level (137), lat, lon
+- Returns list of paths to output files
+
+---
+
+#### 3. Coarse-grain Momentum Fluxes
+
+**Function:** `coarsegrain_computed_momentum_fluxes()`
+
+**What it does:** Regrids high-resolution momentum flux data to a coarser T42 grid and creates comprehensive training datasets. The function:
+
+- Uses conservative regridding (xESMF) to preserve flux quantities
+- Combines resolved momentum fluxes with additional derived fields
+- Creates training-ready datasets with input/output fields for ML models
+- Processes multiple months efficiently
+
+**Parameters:**
+
+- `year` (int, required): The year to process
+- `start_month` (int, required): Starting month (1-12)
+- `end_month` (int, required): Ending month (1-12)
+- `start_day` (int, optional): Starting day of month (1-31). If None, uses 1 (default: None)
+- `end_day` (int, optional): Ending day of month (1-31). If None, uses last day of month (default: None)
+- `momentum_flux_dir` (str, optional): Directory containing momentum flux files (default: `./momentum_fluxes`)
+- `training_data_dir` (str, optional): Directory to save training data files (default: `./training_data`)
+- `t42_grid_file` (str, required): Path to T42 grid definition file (must contain 'lon', 'lat', 'lonb', 'latb' variables)
+- `era5_data_dir` (str, optional): Directory containing original ERA5 data
+- `model_levels_file` (str, optional): Path to ERA5 model levels Excel file
+- `regridder_weights_file` (str, optional): Path to save/load regridding weights
+
+**Example:**
+
+```python
+# Coarse-grain momentum fluxes for January-March 2020
+training_files = nonlocal.coarsegrain_computed_momentum_fluxes(
+    year=2020,
+    start_month=1,
+    end_month=3,
+    t42_grid_file='./t42_lat_and_latb.nc',
+    momentum_flux_dir='./momentum_fluxes',
+    training_data_dir='./training_data'
+)
+```
+
+**Output:**
+
+- Creates output directory (default: `./training_data`)
+- Creates NetCDF files: `era5_training_data_hourly_era5_{year}{month}{day}.nc`
+- Each file contains input fields (u, v, w, temperature, pressure, gradients) and output fields (momentum fluxes)
+- Returns list of paths to training data files
+
+---
+
+### Complete Nonlocal Parameterization Workflow Example
+
+Here's a complete example that demonstrates the full pipeline:
+
+```python
+import wxcbench.nonlocal_parameterization as nonlocal
+
+# Step 1: Download ERA5 model level data
+print("Step 1: Downloading ERA5 data...")
+nonlocal.download_era5_modellevel_data(
+    year=2020,
+    month=1,
+    start_day=1,
+    end_day=31,
+    output_dir='./ERA5_data_ml'
+)
+
+# Step 2: Compute momentum fluxes
+print("Step 2: Computing momentum fluxes...")
+nonlocal.compute_momentum_flux_from_era5(
+    year=2020,
+    month=1,
+    era5_data_dir='./ERA5_data_ml',
+    output_dir='./momentum_fluxes'
+)
+
+# Step 3: Coarse-grain to T42 grid
+print("Step 3: Coarse-graining to T42 grid...")
+nonlocal.coarsegrain_computed_momentum_fluxes(
+    year=2020,
+    start_month=1,
+    end_month=1,
+    t42_grid_file='./t42_lat_and_latb.nc',
+    momentum_flux_dir='./momentum_fluxes',
+    training_data_dir='./training_data'
+)
+
+print("Processing complete!")
+```
+
+---
+
+### Nonlocal Parameterization Module Configuration
+
+All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
+
+- **ERA5 Grid Resolution:** 0.3° x 0.3° (built-in default)
+- **ERA5 Model Levels:** 137 levels (1-137) (built-in default)
+- **ERA5 Time Steps:** Hourly data (00-23) (built-in default)
+- **Helmholtz Truncation:** T21 truncation for scale separation (default, can be customized)
+- **T42 Grid:** 128 x 64 longitude/latitude points (built-in default)
+- **Regridding Method:** Conservative regridding (preserves flux quantities)
+- **Output Directories:** Can be customized via `output_dir` parameters (defaults: `./ERA5_data_ml`, `./momentum_fluxes`, `./training_data`)
+
+---
+
+### Weather Analog Module
+
+The `weather_analog` module provides functionality for processing MERRA2 meteorological data by extracting specific variables (Sea Level Pressure and 2-meter Temperature) for defined geographic regions and time periods. This module is designed for creating weather analog datasets used in machine learning applications.
+
+#### Import the Weather Analog Module
+
+```python
+import wxcbench.weather_analog as weather_analog
+```
+
+#### 1. Process Single File
+
+**Function:** `process_single_file()`
+
+**What it does:** Processes a single MERRA2 NetCDF file by extracting specified variables for a geographic region. The function:
+
+- Opens MERRA2 NetCDF file
+- Extracts selected variables (default: SLP and T2M)
+- Filters data for specified geographic region
+- Saves processed data to a new NetCDF file
+
+**Parameters:**
+
+- `input_file` (str, required): Path to input MERRA2 NetCDF file
+- `output_file` (str, required): Path to output NetCDF file
+- `variables` (list, optional): List of variable names to extract. Defaults to ['SLP', 'T2M'] (default: None)
+- `lon_bounds` (tuple, optional): Longitude bounds as (min, max) in degrees. Defaults to (-15, 0) (default: None)
+- `lat_bounds` (tuple, optional): Latitude bounds as (min, max) in degrees. Defaults to (42, 58) (default: None)
+- `time_index` (list, optional): List of time indices to extract. Defaults to [0] (first time step) (default: None)
+
+**Example:**
+
+```python
+# Process a single MERRA2 file
+success = weather_analog.process_single_file(
+    input_file='MERRA2.20190101.SUB.nc',
+    output_file='MERRA2_SLP_T2M_20190101.nc',
+    lon_bounds=(-15, 0),
+    lat_bounds=(42, 58)
+)
+
+# Extract different variables
+success = weather_analog.process_single_file(
+    input_file='MERRA2.20190101.SUB.nc',
+    output_file='MERRA2_processed.nc',
+    variables=['SLP', 'T2M', 'T10M'],  # Add 10m temperature
+    lon_bounds=(-20, 5),
+    lat_bounds=(40, 60)
+)
+```
+
+**Output:**
+
+- Creates output directory if it doesn't exist
+- Saves processed NetCDF file with extracted variables and region
+- Returns True if processing succeeded, False otherwise
+
+---
+
+#### 2. Preprocess Weather Analog Data
+
+**Function:** `preprocess_weather_analog()`
+
+**What it does:** Main processing function that processes MERRA2 data files for a specified time period. The function:
+
+- Iterates through dates in the specified range
+- Automatically discovers MERRA2 input files using file naming patterns
+- Processes each file to extract variables for the specified region
+- Skips existing output files to avoid reprocessing
+- Provides progress tracking
+
+**Parameters:**
+
+- `start_date` (datetime, optional): Start date for processing. Defaults to 2019-01-01 (default: None)
+- `end_date` (datetime, optional): End date for processing. Defaults to 2021-12-31 (default: None)
+- `input_dir` (str, optional): Directory containing MERRA2 input files (default: `./MERRA2_data`)
+- `output_dir` (str, optional): Directory to save processed output files (default: `./MERRA2_processed`)
+- `lon_bounds` (tuple, optional): Longitude bounds as (min, max) in degrees. Defaults to (-15, 0) (default: None)
+- `lat_bounds` (tuple, optional): Latitude bounds as (min, max) in degrees. Defaults to (42, 58) (default: None)
+- `variables` (list, optional): List of variable names to extract. Defaults to ['SLP', 'T2M'] (default: None)
+- `skip_existing` (bool, optional): Skip processing if output file exists. Defaults to True (default: True)
+
+**Example:**
+
+```python
+from datetime import datetime
+
+# Process data for a specific time period
+processed_files = weather_analog.preprocess_weather_analog(
+    start_date=datetime(2019, 1, 1),
+    end_date=datetime(2019, 12, 31),
+    input_dir='./MERRA2_data',
+    output_dir='./MERRA2_processed',
+    lon_bounds=(-15, 0),
+    lat_bounds=(42, 58)
+)
+
+# Process with different geographic bounds
+processed_files = weather_analog.preprocess_weather_analog(
+    start_date=datetime(2020, 1, 1),
+    end_date=datetime(2020, 6, 30),
+    input_dir='./MERRA2_data',
+    output_dir='./MERRA2_processed',
+    lon_bounds=(-20, 10),
+    lat_bounds=(35, 65),
+    skip_existing=False  # Reprocess even if output exists
+)
+```
+
+**Output:**
+
+- Creates output directory if it doesn't exist
+- Processes each day in the date range
+- Creates daily NetCDF files: `MERRA2_SLP_T2M_{YYYYMMDD}.nc`
+- Prints progress messages for each file processed
+- Returns list of paths to successfully processed output files
+
+---
+
+### Complete Weather Analog Workflow Example
+
+Here's a complete example that demonstrates the full pipeline:
+
+```python
+import wxcbench.weather_analog as weather_analog
+from datetime import datetime
+
+# Process MERRA2 data for 2019
+print("Step 1: Processing MERRA2 data...")
+processed_files = weather_analog.preprocess_weather_analog(
+    start_date=datetime(2019, 1, 1),
+    end_date=datetime(2019, 12, 31),
+    input_dir='./MERRA2_data/M2I1NXASM',
+    output_dir='./MERRA2_processed',
+    lon_bounds=(-15, 0),
+    lat_bounds=(42, 58)
+)
+
+print(f"Processed {len(processed_files)} files")
+
+# Process a single file for verification
+print("\nStep 2: Processing single file for verification...")
+success = weather_analog.process_single_file(
+    input_file='./MERRA2_data/M2I1NXASM/MERRA2.20190101.SUB.nc',
+    output_file='./MERRA2_processed/test_20190101.nc',
+    variables=['SLP', 'T2M'],
+    lon_bounds=(-15, 0),
+    lat_bounds=(42, 58)
+)
+
+if success:
+    print("Single file processing successful!")
+else:
+    print("Single file processing failed!")
+
+print("Workflow complete!")
+```
+
+---
+
+### Weather Analog Module Configuration
+
+All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
+
+- **Geographic Bounds:** Default region: 42°N-58°N, 15°W-0°E. Can be customized via `lon_bounds` and `lat_bounds` parameters
+- **Time Period:** Default: 2019-01-01 to 2021-12-31. Can be customized via `start_date` and `end_date` parameters
+- **Variables:** Default: ['SLP', 'T2M']. Can be customized via `variables` parameter
+- **MERRA2 File Pattern:** `MERRA2*.{date}.SUB.nc` (built-in default)
+- **Output File Pattern:** `MERRA2_SLP_T2M_{date}.nc` (built-in default)
+- **Time Index:** Default: [0] (first time step). Can be customized via `time_index` parameter
+- **Output Directories:** Can be customized via `input_dir` and `output_dir` parameters (defaults: `./MERRA2_data`, `./MERRA2_processed`)
+
+---
