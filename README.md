@@ -2,18 +2,24 @@
 
 ## Installation
 
+**Important:** Due to a build dependency issue with `pyspharm` (required by `windspharm`), you need to use the `--no-build-isolation` flag:
+
 ```bash
+pip install "numpy>=1.20.0"
+pip install --no-build-isolation wxcbench
+```
+
+**Why?** The `pyspharm` package requires `numpy` to be available during its build process. Pip's default build isolation creates a temporary environment that doesn't have access to already-installed packages like `numpy`. The `--no-build-isolation` flag allows the build process to use your current environment where `numpy` is installed.
+
+**Alternative method** (if the above doesn't work):
+
+```bash
+pip install "numpy>=1.20.0"
+pip install --no-build-isolation "pyspharm>=1.0.9"
 pip install wxcbench
 ```
 
-**Note:** If you encounter build errors related to `pyspharm` (a dependency of `windspharm`), ensure `numpy` is installed first:
-
-```bash
-pip install numpy>=1.20.0
-pip install wxcbench
-```
-
-This ensures `numpy` is available when building dependencies that require it at build time.
+This installs `pyspharm` separately first, then installs the rest of the package.
 
 ## Usage
 
