@@ -74,6 +74,8 @@ exclude = [
     "tests.*",
     "usage*",
     "usage.*",
+    "usage_examples*",
+    "usage_examples.*",
 ]
 
 [tool.setuptools.package-data]

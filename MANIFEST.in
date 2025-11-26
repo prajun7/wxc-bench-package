@@ -1,7 +1,6 @@
 include README.md
 include LICENSE
 include requirements.txt
-include CHANGELOG.md
 include pyproject.toml
 global-exclude __pycache__
 global-exclude *.py[co]
@@ -10,7 +9,10 @@ global-exclude *.egg-info
 global-exclude .pytest_cache
 global-exclude .DS_Store
 global-exclude usage
+global-exclude usage_examples
+global-exclude usage*
 global-exclude tests
+global-exclude tests*
 global-exclude dist
 global-exclude build
 global-exclude DEPLOYMENT.md
@@ -28,4 +30,6 @@ global-exclude .nox
 global-exclude COMPARISON_ANALYSIS.md
 global-exclude MISSING_FILES_SUMMARY.md
 global-exclude PACKAGE_STRUCTURE.md
+global-exclude NAMING*.md
+global-exclude REMAINING_ISSUES.md
 
