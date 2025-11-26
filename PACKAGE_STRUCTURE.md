@@ -51,19 +51,7 @@ wxc-bench/
 │       ├── __init__.py
 │       └── preprocess_weather_analog.py
 │
-├── docs/
-│   ├── index.md
-│   ├── installation.md
-│   ├── quickstart.md
-│   ├── api/
-│   │   ├── aviation_turbulence.md
-│   │   ├── forecast_report_generation.md
-│   │   └── ...
-│   └── examples/
-│       ├── aviation_turbulence_example.ipynb
-│       └── ...
-│
-└── examples/
+└── usage/
     ├── aviation_turbulence_workflow.py
     ├── forecast_generation_example.py
     └── complete_pipeline.py
