@@ -13,10 +13,8 @@ from wxcbench.__version__ import __version__
 
 from wxcbench import aviation_turbulence
 from wxcbench import forecast_report_generation
-from wxcbench import gravity_wave
 from wxcbench import hurricane
-from wxcbench import weather_analogs
-from wxcbench import precipitation_forecast
+from wxcbench import weather_analog
 from wxcbench import long_term_precipitation_forecast
 from wxcbench import nonlocal_parameterization
 
@@ -24,9 +22,7 @@ __all__ = [
     "aviation_turbulence",
     "forecast_report_generation",
     "hurricane",
-    "gravity_wave",
-    "weather_analogs",
-    "precipitation_forecast",
+    "weather_analog",
     "long_term_precipitation_forecast",
     "nonlocal_parameterization",
 ]

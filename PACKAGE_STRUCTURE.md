@@ -53,6 +53,7 @@ wxc-bench/
 │   │
 │   └── weather_analog/
 │       ├── __init__.py
+│       ├── config.py
 │       └── preprocess_weather_analog.py
 │
 └── usage/
