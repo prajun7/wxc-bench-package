@@ -59,10 +59,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/NASA-IMPACT/WxC-Bench"
-Documentation = "https://github.com/NASA-IMPACT/WxC-Bench#readme"
-Repository = "https://github.com/NASA-IMPACT/WxC-Bench"
-"Bug Reports" = "https://github.com/NASA-IMPACT/WxC-Bench/issues"
+Homepage = "https://github.com/prajun7/wxc-bench-package"
+Documentation = "https://github.com/prajun7/wxc-bench-package#readme"
+Repository = "https://github.com/prajun7/wxc-bench-package"
+"Bug Reports" = "https://github.com/prajun7/wxc-bench-package/issues"
 
 [tool.setuptools]
 include-package-data = true
