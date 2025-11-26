@@ -621,3 +621,480 @@ All default settings are built into the package and can be customized through fu
 - **Figure Settings:** Can be customized via `figsize` and `dpi` parameters (defaults: `(10, 6)`, `300`)
 
 ---
+
+### Long-Term Precipitation Forecast Module
+
+The `long_term_precipitation_forecast` module provides utilities for evaluating and analyzing long-term precipitation forecasts (up to 4 weeks lead time) from satellite observations. This module focuses on evaluation, data loading, preprocessing, and visualization utilities for working with precipitation forecast data.
+
+#### Import the Long-Term Precipitation Forecast Module
+
+```python
+import wxcbench.long_term_precipitation_forecast as precip
+```
+
+#### 1. Load Precipitation Data
+
+**Function:** `load_precipitation_data()`
+
+**What it does:** Loads precipitation data from NetCDF files. The function:
+
+- Supports both PERSIANN CDR and IMERG Final precipitation datasets
+- Auto-detects precipitation variable names if not specified
+- Returns xarray DataArray or Dataset with coordinates
+
+**Parameters:**
+
+- `file_path` (str or Path, required): Path to the NetCDF file
+- `variable_name` (str, optional): Name of the precipitation variable. If None, auto-detects (default: None)
+- `return_coords` (bool, optional): If True, returns Dataset with coordinates; if False, returns DataArray (default: False)
+
+**Example:**
+
+```python
+# Load precipitation data
+precip_data = precip.load_precipitation_data('precipitation_data.nc')
+
+# Load with coordinates
+precip_dataset = precip.load_precipitation_data(
+    'precipitation_data.nc',
+    return_coords=True
+)
+```
+
+**Output:**
+
+- Returns xarray DataArray or Dataset containing precipitation values
+- Includes latitude and longitude coordinates
+
+---
+
+#### 2. Load Satellite Observations
+
+**Function:** `load_satellite_observations()`
+
+**What it does:** Loads satellite observation data from NetCDF files. The function:
+
+- Supports GridSat, PATMOS-x, and SSMI observation datasets
+- Handles multiple data variables in a single file
+- Returns observations with coordinates
+
+**Parameters:**
+
+- `file_path` (str or Path, required): Path to the NetCDF file
+- `return_coords` (bool, optional): If True, returns Dataset with coordinates; if False, returns DataArray (default: False)
+
+**Example:**
+
+```python
+# Load satellite observations
+obs_data = precip.load_satellite_observations('gridsat_observations.nc')
+
+# Load with all coordinates
+obs_dataset = precip.load_satellite_observations(
+    'patmosx_observations.nc',
+    return_coords=True
+)
+```
+
+**Output:**
+
+- Returns xarray DataArray or Dataset containing satellite observation values
+- Includes all available channels/variables
+
+---
+
+#### 3. Combine Observations
+
+**Function:** `combine_observations()`
+
+**What it does:** Combines multiple daily observation files into a single dataset. The function:
+
+- Creates sequences of observations from consecutive days (typically 8 days)
+- Sorts files by date automatically
+- Combines observations along time dimension
+
+**Parameters:**
+
+- `obs_files` (list, required): List of paths to observation NetCDF files (consecutive days)
+- `n_days` (int, optional): Number of days to combine (default: 8)
+- `sort_by_date` (bool, optional): If True, sort files by date before combining (default: True)
+
+**Example:**
+
+```python
+# Combine 8 days of observations
+obs_files = [
+    'obs_20200101.nc',
+    'obs_20200102.nc',
+    'obs_20200103.nc',
+    'obs_20200104.nc',
+    'obs_20200105.nc',
+    'obs_20200106.nc',
+    'obs_20200107.nc',
+    'obs_20200108.nc'
+]
+combined = precip.combine_observations(obs_files, n_days=8)
+```
+
+**Output:**
+
+- Returns xarray Dataset with combined observations
+- Includes time dimension with day indices (0 to n_days-1)
+
+---
+
+#### 4. Regrid to MERRA Grid
+
+**Function:** `regrid_to_merra()`
+
+**What it does:** Regrids data to the MERRA grid (0.625° x 0.5° resolution). The function:
+
+- Supports multiple interpolation methods (nearest, linear, cubic)
+- Handles multi-dimensional data (preserves time/lead_time dimensions)
+- Creates xarray DataArray on MERRA grid
+
+**Parameters:**
+
+- `data` (np.ndarray or xr.DataArray, required): Data to regrid
+- `source_lon` (np.ndarray or xr.DataArray, optional): Source longitude coordinates. If None and data is xr.DataArray, uses coordinates
+- `source_lat` (np.ndarray or xr.DataArray, optional): Source latitude coordinates. If None and data is xr.DataArray, uses coordinates
+- `method` (str, optional): Interpolation method: 'nearest', 'linear', 'cubic' (default: 'nearest')
+
+**Example:**
+
+```python
+# Regrid satellite observations to MERRA grid
+regridded_data = precip.regrid_to_merra(
+    obs_data,
+    method='linear'
+)
+```
+
+**Output:**
+
+- Returns xarray DataArray on MERRA grid
+- Resolution: 0.625° longitude x 0.5° latitude
+
+---
+
+#### 5. Normalize Data
+
+**Function:** `normalize_data()`
+
+**What it does:** Normalizes or standardizes data using various methods. The function:
+
+- Supports multiple normalization methods (standard, minmax, robust, log)
+- Handles NaN values appropriately
+- Preserves data structure and coordinates
+
+**Parameters:**
+
+- `data` (np.ndarray or xr.DataArray, required): Data to normalize
+- `method` (str, optional): Normalization method: 'standard', 'minmax', 'robust', 'log' (default: 'standard')
+- `axis` (int, optional): Axis along which to compute statistics. If None, normalizes over entire array (default: None)
+- `return_scaler` (bool, optional): If True, also return the scaler object for inverse transformation (default: False)
+
+**Example:**
+
+```python
+# Standardize data
+normalized = precip.normalize_data(precip_data, method='standard')
+
+# Min-max normalization
+normalized = precip.normalize_data(precip_data, method='minmax')
+
+# With scaler for inverse transformation
+normalized, scaler = precip.normalize_data(
+    precip_data,
+    method='standard',
+    return_scaler=True
+)
+```
+
+**Output:**
+
+- Returns normalized xarray DataArray or numpy array
+- If `return_scaler=True`, returns tuple (normalized_data, scaler)
+
+---
+
+#### 6. Compute Evaluation Metrics
+
+**Functions:** `compute_bias()`, `compute_mse()`, `compute_rmse()`, `compute_correlation()`, `compute_mae()`
+
+**What they do:** Compute various evaluation metrics between predictions and observations. The functions:
+
+- Support area-weighted calculations over specified latitude ranges
+- Handle NaN values appropriately
+- Work with both numpy arrays and xarray DataArrays
+
+**Parameters:**
+
+- `predictions` (np.ndarray or xr.DataArray, required): Predicted precipitation values
+- `observations` (np.ndarray or xr.DataArray, required): Observed precipitation values
+- `lat` (np.ndarray or xr.DataArray, optional): Latitude coordinates for area weighting
+- `lat_range` (tuple, optional): Latitude range for evaluation (default: (-60, 60))
+
+**Example:**
+
+```python
+# Compute bias
+bias = precip.compute_bias(forecasts, observations)
+
+# Compute MSE with area weighting
+mse = precip.compute_mse(
+    forecasts,
+    observations,
+    lat=lat_coords,
+    lat_range=(-60, 60)
+)
+
+# Compute correlation
+correlation = precip.compute_correlation(forecasts, observations)
+
+# Compute RMSE
+rmse = precip.compute_rmse(forecasts, observations)
+```
+
+**Output:**
+
+- Returns float or array of metric values
+- Positive bias indicates over-prediction
+- Correlation ranges from -1 to 1
+
+---
+
+#### 7. Evaluate Forecasts Comprehensively
+
+**Function:** `evaluate_forecasts()`
+
+**What it does:** Comprehensive evaluation of precipitation forecasts across multiple lead times. The function:
+
+- Computes multiple metrics (bias, MSE, RMSE, correlation, MAE) for each lead time
+- Supports area-weighted evaluation
+- Returns dictionary with all computed metrics
+
+**Parameters:**
+
+- `forecasts` (np.ndarray or xr.DataArray, required): Forecast precipitation values. Shape: (lead_time, lat, lon) or (time, lead_time, lat, lon)
+- `observations` (np.ndarray or xr.DataArray, required): Observed precipitation values. Shape should match forecasts
+- `lead_times` (list, optional): List of lead times in days. If None, uses indices 0, 1, 2, ... (default: None)
+- `lat` (np.ndarray or xr.DataArray, optional): Latitude coordinates
+- `lat_range` (tuple, optional): Latitude range for evaluation (default: (-60, 60))
+- `metrics` (list, optional): List of metrics to compute. Options: 'bias', 'mse', 'rmse', 'correlation', 'mae'. If None, computes all (default: None)
+
+**Example:**
+
+```python
+# Evaluate forecasts for all lead times
+results = precip.evaluate_forecasts(
+    forecasts=forecast_data,
+    observations=observation_data,
+    lead_times=list(range(1, 29)),  # Days 1-28
+    lat_range=(-60, 60)
+)
+
+# Access specific metrics
+bias_values = results['bias']
+correlation_values = results['correlation']
+lead_times = results['lead_times']
+```
+
+**Output:**
+
+- Returns dictionary with metric names as keys
+- Each metric contains array of values (one per lead time)
+- Includes 'lead_times' key with lead time array
+
+---
+
+#### 8. Visualize Precipitation Comparison
+
+**Function:** `plot_precipitation_comparison()`
+
+**What it does:** Creates side-by-side comparison plots of forecast and observation precipitation. The function:
+
+- Displays forecast, observation, and difference maps
+- Uses consistent color scales for comparison
+- Supports saving to file
+
+**Parameters:**
+
+- `forecast` (np.ndarray or xr.DataArray, required): Forecast precipitation data
+- `observation` (np.ndarray or xr.DataArray, required): Observed precipitation data
+- `lead_time` (int, optional): Lead time index to plot if data is 3D
+- `lon` (np.ndarray or xr.DataArray, optional): Longitude coordinates
+- `lat` (np.ndarray or xr.DataArray, optional): Latitude coordinates
+- `output_file` (str or Path, optional): Path to save the figure
+- `figsize` (tuple, optional): Figure size (width, height) (default: (12, 8))
+- `dpi` (int, optional): Figure resolution (default: 300)
+- `vmax` (float, optional): Maximum value for color scale
+- `cmap` (str, optional): Colormap name (default: 'YlGnBu')
+
+**Example:**
+
+```python
+# Plot comparison for specific lead time
+fig = precip.plot_precipitation_comparison(
+    forecast=forecast_data[7, :, :],  # 7-day lead time
+    observation=observation_data[7, :, :],
+    lead_time=7,
+    output_file='forecast_comparison_7day.png'
+)
+```
+
+**Output:**
+
+- Creates matplotlib figure with 3 subplots (forecast, observation, difference)
+- Saves to file if `output_file` specified
+
+---
+
+#### 9. Plot Evaluation Metrics
+
+**Function:** `plot_evaluation_metrics()`
+
+**What it does:** Plots evaluation metrics as a function of lead time. The function:
+
+- Creates subplots for each metric
+- Shows how metrics degrade with increasing lead time
+- Supports custom metric selection
+
+**Parameters:**
+
+- `metrics_dict` (dict, required): Dictionary with metric names as keys and arrays of values. Should include 'lead_times' key
+- `lead_times` (list, optional): List of lead times in days. If None, uses 'lead_times' from metrics_dict (default: None)
+- `output_file` (str or Path, optional): Path to save the figure
+- `figsize` (tuple, optional): Figure size (width, height) (default: (12, 8))
+- `dpi` (int, optional): Figure resolution (default: 300)
+- `metrics_to_plot` (list, optional): List of metrics to plot. If None, plots all except 'lead_times' (default: None)
+
+**Example:**
+
+```python
+# Plot evaluation results
+fig = precip.plot_evaluation_metrics(
+    metrics_dict=results,
+    output_file='evaluation_metrics.png'
+)
+
+# Plot specific metrics only
+fig = precip.plot_evaluation_metrics(
+    metrics_dict=results,
+    metrics_to_plot=['bias', 'correlation', 'rmse']
+)
+```
+
+**Output:**
+
+- Creates matplotlib figure with subplots for each metric
+- Shows metric evolution with lead time
+
+---
+
+#### 10. Plot Spatial Distribution
+
+**Function:** `plot_spatial_distribution()`
+
+**What it does:** Creates spatial distribution plots of precipitation data. The function:
+
+- Displays global or regional precipitation patterns
+- Supports custom color scales
+- Handles multi-dimensional data (averages over time if needed)
+
+**Parameters:**
+
+- `data` (np.ndarray or xr.DataArray, required): Precipitation data. Shape: (lat, lon) or (time, lat, lon)
+- `title` (str, optional): Plot title (default: 'Precipitation Distribution')
+- `lon` (np.ndarray or xr.DataArray, optional): Longitude coordinates
+- `lat` (np.ndarray or xr.DataArray, optional): Latitude coordinates
+- `output_file` (str or Path, optional): Path to save the figure
+- `figsize` (tuple, optional): Figure size (width, height) (default: (12, 8))
+- `dpi` (int, optional): Figure resolution (default: 300)
+- `cmap` (str, optional): Colormap name (default: 'YlGnBu')
+- `vmax` (float, optional): Maximum value for color scale
+
+**Example:**
+
+```python
+# Plot spatial distribution
+fig = precip.plot_spatial_distribution(
+    data=precip_data,
+    title='Daily Precipitation (mm/day)',
+    output_file='precipitation_map.png'
+)
+```
+
+**Output:**
+
+- Creates matplotlib figure with spatial precipitation map
+- Includes colorbar with units
+
+---
+
+### Complete Long-Term Precipitation Forecast Workflow Example
+
+Here's a complete example that demonstrates the full pipeline:
+
+```python
+import wxcbench.long_term_precipitation_forecast as precip
+import xarray as xr
+
+# Step 1: Load precipitation data
+print("Step 1: Loading precipitation data...")
+obs_data = precip.load_precipitation_data('observations.nc')
+forecast_data = precip.load_precipitation_data('forecasts.nc')
+
+# Step 2: Regrid to MERRA grid if needed
+print("Step 2: Regridding to MERRA grid...")
+obs_regridded = precip.regrid_to_merra(obs_data, method='linear')
+forecast_regridded = precip.regrid_to_merra(forecast_data, method='linear')
+
+# Step 3: Evaluate forecasts
+print("Step 3: Evaluating forecasts...")
+results = precip.evaluate_forecasts(
+    forecasts=forecast_regridded,
+    observations=obs_regridded,
+    lead_times=list(range(1, 29)),  # 28 days
+    lat_range=(-60, 60)
+)
+
+# Step 4: Print results
+print("\nEvaluation Results:")
+print(f"Bias (7 days): {results['bias'][6]:.4f} mm/day")
+print(f"RMSE (7 days): {results['rmse'][6]:.4f} mm/day")
+print(f"Correlation (7 days): {results['correlation'][6]:.4f}")
+
+# Step 5: Visualize comparison
+print("\nStep 5: Creating visualizations...")
+precip.plot_precipitation_comparison(
+    forecast=forecast_regridded[6, :, :],  # 7-day lead time
+    observation=obs_regridded[6, :, :],
+    lead_time=7,
+    output_file='forecast_comparison_7day.png'
+)
+
+# Step 6: Plot evaluation metrics
+precip.plot_evaluation_metrics(
+    metrics_dict=results,
+    output_file='evaluation_metrics.png'
+)
+
+print("Analysis complete!")
+```
+
+---
+
+### Long-Term Precipitation Forecast Module Configuration
+
+All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
+
+- **MERRA Grid:** Grid resolution (0.625° x 0.5°), dimensions (576 x 361), and bounds (built-in defaults)
+- **Evaluation Latitude Range:** Can be customized via `lat_range` parameter in evaluation functions (default: (-60, 60))
+- **Lead Times:** Can be customized via `lead_times` parameter in evaluation functions (default: 1-28 days)
+- **Input Observation Days:** 8 consecutive days of observations (built-in default)
+- **Normalization Methods:** Available methods: 'standard', 'minmax', 'robust', 'log'
+- **Output Directories:** Can be customized via `output_file` parameters (defaults: `./precipitation_figures`)
+- **Figure Settings:** Can be customized via `figsize` and `dpi` parameters (defaults: `(12, 8)`, `300`)
+
+---
