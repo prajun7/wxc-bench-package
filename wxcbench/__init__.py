@@ -2,8 +2,7 @@
 WxC-Bench: Multi-modal dataset toolkit for weather and climate downstream tasks
 """
 
-from wxcbench.__version__ import __version__
-
+__version__ = "0.1.0"
 __author__ = "Prajun Trital"
 __license__ = "MIT"
 

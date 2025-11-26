@@ -51,7 +51,7 @@ You should see `(wxcbench-env)` in your terminal prompt when activated.
 Update version in:
 
 - `pyproject.toml`: `version = "0.1.0"`
-- `wxcbench/__version__.py`: `__version__ = "0.1.0"`
+- `wxcbench/__init__.py`: `__version__ = "0.1.0"`
 
 ## Building the Package
 
