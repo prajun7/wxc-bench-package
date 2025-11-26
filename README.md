@@ -232,7 +232,7 @@ wab.create_training_data(
 
 ---
 
-### Complete Workflow Example
+### Complete Aviation Turbulence Workflow Example
 
 Here's a complete example that demonstrates the full pipeline:
 
@@ -277,7 +277,7 @@ print("Workflow complete!")
 
 ---
 
-### Configuration
+### Aviation Turbulence Configuration
 
 All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
 
@@ -285,3 +285,197 @@ All default settings are built into the package and can be customized through fu
 - **Turbulence Threshold:** Can be customized via `threshold` parameter in `grid_pireps()` (default: 0.25)
 - **Flight Levels:** Can be customized via `levels` parameter in `create_training_data()` (default: ['low', 'med', 'high'])
 - **Output Directories:** Can be customized via `output_dir` parameters in each function (defaults: `./pirep_downloads`, `./gridded_data`, `./training_data`)
+
+---
+
+### Forecast Report Generation Module
+
+The `forecast_report_generation` module provides functionality for downloading HRRR weather data, scraping weather forecast reports, and creating metadata files for machine learning applications. Here's how to use each function:
+
+#### Import the Forecast Report Generation Module
+
+```python
+import wxcbench.forecast_report_generation as frg
+```
+
+#### 1. Scrape Weather Reports
+
+**Function:** `scrape_weather_reports()`
+
+**What it does:** Scrapes textual weather forecast reports from SPC (Storm Prediction Center). The function:
+
+- Fetches weather reports within a specified date range from the SPC website
+- Extracts summary discussions from the reports
+- Saves extracted data as CSV files for pairing with HRRR weather data
+- Organizes reports by date for easy matching with weather data files
+
+**Parameters:**
+
+- `start_date` (str, required): Start date of the time range in YYYY-MM-DD format (e.g., "2021-06-27")
+- `end_date` (str, required): End date of the time range in YYYY-MM-DD format (e.g., "2021-06-27")
+- `output_dir` (str, optional): Directory to save the output CSV files (default: `./csv_reports`)
+
+**Example:**
+
+```python
+# Scrape weather reports for a specific date range
+df = frg.scrape_weather_reports(
+    start_date="2021-06-27",
+    end_date="2021-06-27"
+)
+```
+
+**Output:**
+
+- Creates `csv_reports/` directory (or specified directory)
+- Creates CSV files for each date: `YYYYMMDD.csv`
+- Each CSV file contains columns: `date`, `time`, `url`, `discussion`
+- Returns a pandas DataFrame containing all scraped data
+
+---
+
+#### 2. Download HRRR Weather Data
+
+**Function:** `download_hrrr()`
+
+**What it does:** Downloads HRRR (High-Resolution Rapid Refresh) weather data files from NOAA's public S3 bucket. The function:
+
+- Downloads HRRR grib2 files from NOAA's S3 bucket
+- Supports configurable date ranges and time intervals
+- Supports different forecast hours and dataset types (pressure, natural, surface)
+- Automatically creates storage directory if it doesn't exist
+
+**Parameters:**
+
+- `start_date` (str, required): Start date for downloading HRRR data (format: "YYYYMMDD-HH", e.g., "20180101-01")
+- `end_date` (str, required): End date for downloading HRRR data (format: "YYYYMMDD-HH", e.g., "20180102-01")
+- `forecast_hours` (List[int], optional): Forecast hours to download (0 represents analysis files) (default: `[0]`)
+- `time_interval` (int, optional): Interval between downloads in hours (default: `24`)
+- `dataset_type` (str, optional): HRRR dataset type. Options: `"prs"` (pressure), `"nat"` (natural), `"sfc"` (surface) (default: `"nat"`)
+- `output_dir` (str, optional): Local directory to save downloaded HRRR files (default: `./hrrr`)
+
+**Example:**
+
+```python
+# Download HRRR analysis data for a date range
+frg.download_hrrr(
+    start_date="20180101-01",
+    end_date="20180102-01",
+    forecast_hours=[0],
+    dataset_type="nat",
+    output_dir="./hrrr"
+)
+```
+
+**Output:**
+
+- Creates `hrrr/` directory (or specified directory)
+- Downloads HRRR grib2 files with naming format: `hrrr.YYYYMMDD.tHHZ.wrfDATATYPEfFF.grib2`
+- Example: `hrrr.20180101.t01z.wrfnatf00.grib2`
+
+---
+
+#### 3. Create Metadata File
+
+**Function:** `create_metadata()`
+
+**What it does:** Creates a metadata CSV file that pairs HRRR weather data files with their corresponding forecast discussions. The function:
+
+- Matches HRRR grib2 files with their corresponding caption files
+- Extracts forecast discussions from CSV files
+- Creates a metadata file suitable for machine learning training
+- Output format: CSV with columns `file_name` and `text`
+
+**Parameters:**
+
+- `image_dir` (str, required): Path to the directory containing HRRR image files (.grib2)
+- `caption_dir` (str, required): Path to the directory containing caption files (.csv)
+- `output_file` (str, optional): Path to save the generated metadata CSV file (default: `./metadata.csv`)
+
+**Example:**
+
+```python
+# Create metadata file pairing HRRR files with forecast discussions
+df_metadata = frg.create_metadata(
+    image_dir="./hrrr",
+    caption_dir="./csv_reports",
+    output_file="./metadata.csv"
+)
+```
+
+**Output:**
+
+- Creates metadata CSV file at specified location
+- CSV format with columns:
+  - `file_name`: Name of the HRRR grib2 file (e.g., `hrrr.20180101.t01z.wrfnatf00.grib2`)
+  - `text`: Corresponding forecast discussion text extracted from CSV caption files
+- Returns a pandas DataFrame containing the metadata
+
+---
+
+### Complete Forecast Report Generation Workflow Example
+
+Here's a complete example that demonstrates the full pipeline:
+
+```python
+import wxcbench.forecast_report_generation as frg
+
+# Step 1: Scrape weather reports from SPC
+print("Step 1: Scraping weather reports...")
+df_reports = frg.scrape_weather_reports(
+    start_date="2021-06-27",
+    end_date="2021-06-27",
+    output_dir="./csv_reports"
+)
+print(f"Scraped {len(df_reports)} reports")
+
+# Step 2: Download HRRR weather data
+print("Step 2: Downloading HRRR data...")
+frg.download_hrrr(
+    start_date="20180101-01",
+    end_date="20180102-01",
+    forecast_hours=[0],
+    dataset_type="nat",
+    output_dir="./hrrr"
+)
+
+# Step 3: Create metadata file
+print("Step 3: Creating metadata file...")
+df_metadata = frg.create_metadata(
+    image_dir="./hrrr",
+    caption_dir="./csv_reports",
+    output_file="./metadata.csv"
+)
+print(f"Created metadata with {len(df_metadata)} entries")
+
+print("Workflow complete!")
+```
+
+---
+
+### File Format Conventions
+
+The module follows these file naming conventions:
+
+- **HRRR files:** `hrrr.YYYYMMDD.tHHZ.wrfDATATYPEfFF.grib2`
+  - Example: `hrrr.20180101.t01z.wrfnatf00.grib2`
+- **Caption files:** `YYYYMMDD.csv`
+  - Example: `20180101.csv`
+- **Output metadata:** `metadata.csv` (customizable)
+
+The metadata creation function automatically matches HRRR files with caption files based on the date portion of the filename.
+
+---
+
+### Forecast Report Generation Configuration
+
+All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
+
+- **HRRR Archive URL:** NOAA's S3 bucket URL (built-in default)
+- **HRRR Dataset Types:** Available types: `"prs"` (pressure), `"nat"` (natural), `"sfc"` (surface). Can be customized via `dataset_type` parameter in `download_hrrr()` (default: `"nat"`)
+- **Forecast Hours:** Can be customized via `forecast_hours` parameter in `download_hrrr()` (default: `[0]` for analysis files)
+- **Time Interval:** Can be customized via `time_interval` parameter in `download_hrrr()` (default: 24 hours)
+- **Output Directories:** Can be customized via `output_dir` parameters in each function (defaults: `./hrrr`, `./csv_reports`)
+- **Metadata Output:** Can be customized via `output_file` parameter in `create_metadata()` (default: `./metadata.csv`)
+
+---
