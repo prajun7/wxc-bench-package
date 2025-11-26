@@ -279,9 +279,9 @@ print("Workflow complete!")
 
 ### Configuration
 
-Default settings can be customized in `config.py`:
+All default settings are built into the package and can be customized through function parameters. You don't need to edit any configuration files - simply pass the desired values as arguments when calling functions:
 
-- **MERRA-2 Grid Parameters:** Grid resolution and dimensions
-- **Turbulence Threshold:** Default threshold for turbulence classification (0.25)
-- **Flight Levels:** Categories for flight level classification
-- **Default Paths:** Standard directories for data storage
+- **MERRA-2 Grid Parameters:** Grid resolution and dimensions (built-in defaults)
+- **Turbulence Threshold:** Can be customized via `threshold` parameter in `grid_pireps()` (default: 0.25)
+- **Flight Levels:** Can be customized via `levels` parameter in `create_training_data()` (default: ['low', 'med', 'high'])
+- **Output Directories:** Can be customized via `output_dir` parameters in each function (defaults: `./pirep_downloads`, `./gridded_data`, `./training_data`)
