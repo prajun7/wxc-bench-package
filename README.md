@@ -1,5 +1,7 @@
 # WxC-Bench Python Package
 
+When working with a foundation model, you can design and generalize your own scripts to adapt the model to different tasks. This allows you to customize preprocessing, fine-tuning, and evaluation pipelines, making the model more flexible, reusable, and scalable across multiple use cases. In this work, a modular pipeline was developed to preprocess, grid, and align multi-source meteorological data for machine learning model training and evaluation.
+
 ## Installation
 
 ### Basic Installation
